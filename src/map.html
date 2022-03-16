@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>map</title>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.0/mapbox-gl.js"></script>
+    <link
+            href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.2.0/mapbox-gl.css"
+            rel="stylesheet"
+    />
+    <script src="citysdk.js"></script>
+</head>
+<body>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+    .legend {
+        background-color: #fff;
+        border-radius: 3px;
+        bottom: 30px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        padding: 10px;
+        position: absolute;
+        right: 10px;
+        z-index: 1;
+    }
+
+    .legend h4 {
+        margin: 0 0 10px;
+    }
+
+    .legend div span {
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin-right: 5px;
+        width: 10px;
+    }
+</style>
+
+<div id='legend' style='display:none;'>
+    <strong>The Title or Explanation of your Map</strong>
+    <nav class='legend clearfix'>
+        <span style='background:#F1EEF6;'></span>
+        <span style='background:#BDC9E1;'></span>
+        <span style='background:#74A9CF;'></span>
+        <span style='background:#2B8CBE;'></span>
+        <span style='background:#045A8D;'></span>
+        <label>0 - 20%</label>
+        <label>40%</label>
+        <label>60%</label>
+        <label>80%</label>
+        <label>100%</label>
+        <small>Source: <a href="#link to source">Name of source</a></small>
+</div>
+
+<div id="map"></div>
+<script>
+    mapboxgl.accessToken = "pk.eyJ1IjoiamNjYXJyb2xsIiwiYSI6ImNsMHN4dHYyZTA1bjEzbm1oc3VseDN4bXYifQ.Hof3bSiM5bjsp_52n85MBQ";
+    var map = new mapboxgl.Map({
+        container:"map",
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: { lat: 37.0902, lng: -95.7129 },
+        zoom: 3
+});
+
+    map.on("load", function() {
+        census(
+            {
+                vintage: 2017,
+                geoHierarchy: {
+                    county: "*"
+                },
+                geoResolution: "5m",
+                sourcePath: ["acs", "acs5"],
+                values: ["NAME", "B19083_001E"]
+            },
+            function(error, response) {
+                map.addLayer({
+                    id: "counties",
+                    type: "fill",
+                    source: {
+                        type: "geojson",
+                        data: response
+                    },
+                    paint: {
+                        "fill-opacity": 0.8,
+                        "fill-color": [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "B19083_001E"],
+                            0.2,
+                            "#ffffb2",
+                            0.4,
+                            "#fecc5c",
+                            0.6,
+                            "#fd8d3c",
+                            0.8,
+                            "#f03b20",
+                            1,
+                            "#bd0026"
+                        ]
+                    }
+                });
+
+                map.on("click", "counties", function(e) {
+                    var coordinates = e.lngLat;
+                    //look up GINI value
+                    var properties = e.features[0].properties;
+
+                    new mapboxgl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(
+                            "Cases in " + properties.NAME + " County: " + properties.B19083_001E
+                        )
+                        .addTo(map);
+                });
+            }
+        );
+    });
+</script>
+
+
+
+</body>
+</html>
