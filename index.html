@@ -198,23 +198,21 @@
         new mapboxgl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(
-                "Cases in " + e.features[0].properties.name + ": "
+                e.features[0].properties.name + "<br />" +
+                "Population: " + e.features[0].properties.population + "<br />" +
+                "Cases: "
             )
             .addTo(map);
     });
 
 
     map.on("click", "county-population", function(e) {
-        var coordinates = e.lngLat;
-        //look up GINI value
-        var properties = e.features[0].properties;
-        var countyName = e.features[0].properties.name;
-        console.log(e.features)
-
         new mapboxgl.Popup()
-            .setLngLat(coordinates)
+            .setLngLat(e.lngLat)
             .setHTML(
-                "Cases in " + countyName + ": "
+                e.features[0].properties.name + "<br />" +
+                "Population: " + e.features[0].properties.population + "<br />" +
+                "Cases: "
             )
             .addTo(map);
     });
